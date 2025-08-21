@@ -1,0 +1,181 @@
+import java.util.Random;
+public class AnalizadorDeNotas {
+    // Atributos
+    public static double[][] notas;
+    public static String[] evaluaciones;
+    public static String[] rut;
+    public static int cantEstudiantes;
+    public static int cantEvaluaciones;
+
+
+    public static double[] promediosEstudiantes;//variable para optimización
+    public static double[] promediosEvaluaciones;//variable para optimización
+
+
+
+
+    // Constructor
+    public AnalizadorDeNotas(int estudiantes, int evaluaciones) {
+        cantEstudiantes = estudiantes;
+        cantEvaluaciones = evaluaciones;
+        notas = new double[cantEstudiantes][cantEvaluaciones];
+        rut = new String[cantEstudiantes];
+        this.evaluaciones = new String[cantEvaluaciones];
+        promediosEstudiantes = new double[cantEstudiantes];
+        promediosEvaluaciones = new double[cantEvaluaciones];
+
+
+
+
+        // Generar datos aleatorios
+        Random random = new Random();
+
+
+
+
+        for (int i = 0; i < cantEstudiantes; i++) {
+            rut[i] = (20000000 + random.nextInt(8999999)) + "-" + random.nextInt(9); // rut aleatorioa base de sumas aleatorias
+            for (int j = 0; j < cantEvaluaciones; j++) {
+                notas[i][j] = Math.round((2.0 + random.nextDouble() * 5.0) * 10) / 10.0; // notas entre 2.0 y 7.0
+            }
+        }
+    }
+    public double calcularPromedioEstudiante(int numEstudiante) {
+        double suma = 0;
+        for (int j = 0; j < cantEvaluaciones; j++) {
+            suma += notas[numEstudiante][j]; //sumatoria de las notas de los estudiantes
+        }
+        return suma / cantEvaluaciones; // devuelve promedio
+    }
+
+
+
+
+    public double calcularPromedioEvaluacion(int index){//index==indice
+        double suma = 0;
+        for (int i = 0; i < cantEstudiantes; i++) {
+            suma += notas[i][index]; //sumatoria de las notas de todos los estudiantes en tal evaluacion
+        }
+        return suma / cantEvaluaciones;// devuelve promedio
+    }
+
+
+
+
+    public double calcularVarianzaEvaluacion(int index){
+        double promedio = calcularPromedioEvaluacion(index); // saca el promedio de la evaluacion
+        double suma = 0;
+        for (int i = 0; i < cantEstudiantes; i++) {
+            suma += Math.pow(notas[i][index] - promedio, 2);// empezamos formula de varianza poblacional, (nota - promedio)elevado al cuadrado
+        }
+        return suma / cantEstudiantes;//termina la formula de varianza poblacional
+    }
+
+
+
+
+    public double[] calcularPromediosEstudiantes() {
+        for (int i = 0; i < cantEstudiantes; i++) {
+            double suma = 0;
+            for (int j = 0; j < cantEvaluaciones; j++) {
+                suma += notas[i][j]; // Sumamos todas las notas del estudiante i
+            }
+            promediosEstudiantes[i] = suma / cantEvaluaciones; // se guarda el promedio
+        }
+        return promediosEstudiantes;// Retornamos el arreglo de promedios
+    }
+
+
+    public double[] calcularVarianzaEstudiantes(){
+        double[] varianza = new double[cantEstudiantes]; // Arreglo para guardar la varianza de cada estudiante
+        for(int i=0;i<cantEstudiantes;i++){
+            double promedio = calcularPromedioEstudiante(i);// Promedio de cada estudiante i
+            double suma = 0;
+            for(int j=0;j<cantEvaluaciones;j++){
+                suma += Math.pow(notas[i][j]-promedio,2);//formula varianza
+            }
+            varianza[i]=suma/cantEvaluaciones;//se guarda la varianza del estudiante
+        }
+        return varianza;//devuelve todas las varianzas
+    }
+
+
+    public double[] calcularPromedioEvaluaciones(String[] evaluaciones){
+        double[] promedios = new double[cantEstudiantes]; // Arreglo de promedios por estudiante
+        for (int i = 0; i < cantEstudiantes; i++) { // Revisa cada estudiante
+            double suma = 0;
+            int contador = 0;
+            for (String nombreEval:evaluaciones) {
+                for (int j = 0; j < cantEvaluaciones; j++) {
+                    if (this.evaluaciones[j].equals(nombreEval)) {
+                        suma += notas[i][j]; // sumamos la nota
+                        contador++; // contamos esa evaluación
+                    }
+                }
+            }
+            if (contador > 0) { // Si encontró al menos una evaluación, se calcula promedio
+                promedios[i] = suma / contador;
+            } else {
+                promedios[i] = 0; // si no encontró ninguna, dejamos 0 por defecto
+            }
+        }
+
+
+        return promedios; // retornamos el arreglo
+    }
+
+
+    public String encontrarMaximo(int index) {
+        double maxNota = 0;//la mejor nota
+        String rutMax = "";//para retornar el estudiante con mejor promedio
+        for (int i = 0; i < cantEstudiantes; i++) {
+            if (notas[i][index] > maxNota) {// para verificar si se encuentra una nota mayor
+                maxNota = notas[i][index];// actualiza la nota mayor
+                rutMax = rut[i];//se guarda el rut al que esta asociada la nota
+            }
+        }
+        return "rut: " + rutMax + " Nota: " + maxNota;
+    }
+
+
+
+
+    //metodos optimizados segun requerimientos
+
+
+    public double[] calcularPromediosEstudiantesOptimizado() {
+        for (int i = 0; i < cantEstudiantes; i++) {
+            double suma = 0;
+            for (int j = 0; j < cantEvaluaciones; j++) {// al no tener variable dentro del metodo, se opta por usar un for para buscar
+                suma += notas[i][j];//se suman las notas del estudiante
+            }
+            promediosEstudiantes[i] = suma / cantEvaluaciones; //se guarda el promedio
+        }
+        return promediosEstudiantes;
+    }
+
+
+    public double[] calcularPromedioEvaluacionesOptimizado() {
+        for (int j = 0; j < cantEvaluaciones; j++) {
+            double suma = 0;
+            for (int i = 0; i < cantEstudiantes; i++) {// al no tener variable dentro del metodo, se opta por usar un for para buscar x2
+                suma += notas[i][j];//se suman las notas de la evaluacion
+            }
+            promediosEvaluaciones[j] = suma / cantEstudiantes; //se guarda el promedio x2
+        }
+        return promediosEvaluaciones;
+    }
+
+
+    public double[] getPromediosEstudiantes() {
+        return promediosEstudiantes;
+    }
+    public double[] getPromediosEvaluaciones() {
+        return promediosEvaluaciones;
+    }
+}
+
+
+   }
+
+
